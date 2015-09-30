@@ -1,0 +1,17 @@
+{
+  "name": "page-swapper",
+  "version": "1.0.0",
+  "homepage": "https://github.com/sh2306/PageSwapper",
+  "authors": [
+    "shennemann <s.hennemann@rto.de>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "keywords": [
+    "page",
+    "transition",
+    "animation"
+  ],
+  "license": "GPL"
+}
