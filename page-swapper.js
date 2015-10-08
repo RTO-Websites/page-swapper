@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 08.10.2015 17:06
+ * Last change: 08.10.2015 17:20
  *
  *
  * Requrires: jquery, modernizr, owl.carousel2
@@ -193,7 +193,8 @@ var PageSwapper = function(args) {
     loadComplete = function(data, textStatus, url, jqXHR) {
         jQuery('body').removeClass('psw-loading').addClass('psw-finish-loading');
 
-        var newTab = jQuery('<div class="tab" />');
+        var newTab = jQuery('<div class="tab" />'),
+            bodyClass = '';
 
         if (!jqXHR) {
             return false;
@@ -221,7 +222,7 @@ var PageSwapper = function(args) {
 
         if (newHtml.filter('#psw-body').length > 0) {
             // Add new class to body
-            var bodyClass = newHtml.filter('#psw-body').prop('class').replace('no-js', '');
+            bodyClass = newHtml.filter('#psw-body').prop('class').replace('no-js', '');
             var oldClasses = jQuery('body').prop('class');
 
             if (args.selector === 'body') {
@@ -229,7 +230,6 @@ var PageSwapper = function(args) {
             }
             jQuery('body').removeClass(oldClasses)
                 .addClass(bodyClass);
-            newTab.parent().data('bodyclass', bodyClass);
         }
 
         var content = newHtml.find(args.selector);
@@ -256,6 +256,7 @@ var PageSwapper = function(args) {
 
         // set url and title to data
         newTab.parent().attr('data-url', url).data('title', title);
+        newTab.parent().data('bodyclass', bodyClass);
 
         // jump to tab on owl
         container.trigger('to.owl.carousel', newTab.parent().index());
