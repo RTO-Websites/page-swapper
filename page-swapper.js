@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 08.10.2015 16:01
+ * Last change: 08.10.2015 17:06
  *
  *
  * Requrires: jquery, modernizr, owl.carousel2
@@ -315,7 +315,7 @@ var PageSwapper = function(args) {
         if (typeof _gaq !== "undefined" && _gaq !== null) {
             _gaq.push(['_trackPageview', args.url]);
         }
-    }
+    };
 
     /**
      * Checks hash and scroll to hash-offset
