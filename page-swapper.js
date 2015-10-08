@@ -1,8 +1,14 @@
-/**
- * Created by shennemann on 24.09.2015.
+/************************************
+ * Author: Sascha Hennemann
+ * Last change: 08.10.2015 16:01
  *
- * Requires owl.carousel2
- */
+ *
+ * Requrires: jquery, modernizr, owl.carousel2
+ *
+ * License: GPL v3
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ ************************************/
+
 
 var PageSwapper = function(args) {
     var win = window,
@@ -35,6 +41,7 @@ var PageSwapper = function(args) {
         changeUrl,
         addIdPrefixes,
         removeIdPrefixes,
+        finish,
         init;
 
 
@@ -46,7 +53,7 @@ var PageSwapper = function(args) {
         tabSelector = args.tabSelector;
 
         // wrap current content with item
-        container.wrapInner('<div class="tab" data-url="' + win.location.href + '"></div>');
+        container.wrapInner('<div class="tab psw-starttab" data-url="' + win.location.href + '"></div>');
 
         // Set CSS and classes
         container.addClass('psw-container');
@@ -68,9 +75,10 @@ var PageSwapper = function(args) {
         container.owlCarousel(owlArgs);
 
         // add css and classes to first item
-        container.find('> .owl-item').data('url', win.location.href);
-        container.find('> .owl-item').data('title', doc.title)
-            .data('bodyclass', jQuery('body').prop('class').replace('no-js', ''));
+        var curTab = container.find('.psw-starttab').parent();
+        curTab.data('url', win.location.href)
+        curTab.data('title', doc.title)
+        curTab.data('bodyclass', jQuery('body').prop('class').replace('no-js', ''));
 
         debug('psw init', self, container, args);
     };
@@ -141,10 +149,9 @@ var PageSwapper = function(args) {
             return;
         }
 
-        var cacheElement = container.find('.owl-item [data-url="' + url + '"]');
+        var cacheElement = container.find('.owl-item[data-url="' + url + '"]');
         if (cacheElement.length > 0) {
-            self.openFromCache(cacheElement, url, hash);
-            debug('psw open from cache', self, container, args, url, hash, currentUrl);
+            self.openFromCache(cacheElement, url);
             return;
         }
 
@@ -198,8 +205,9 @@ var PageSwapper = function(args) {
 
         debug('psw loadComplete', self, container, args, url, hash, currentUrl, jqXHR);
 
-        var currentTab = container.find('> .active');
-        var title = data.match(/<title>(.*?)<\/title>/);
+        var currentTab = container.find('> .active'),
+            title = data.match(/<title>(.*?)<\/title>/);
+
         if (title && title[1]) {
             title = title[1];
         } else {
@@ -221,8 +229,9 @@ var PageSwapper = function(args) {
             }
             jQuery('body').removeClass(oldClasses)
                 .addClass(bodyClass);
-            newTab.data('bodyclass', bodyClass);
+            newTab.parent().data('bodyclass', bodyClass);
         }
+
         var content = newHtml.find(args.selector);
         if (content.length === 0) {
             content = newHtml.filter('#psw-body');
@@ -251,21 +260,14 @@ var PageSwapper = function(args) {
         // jump to tab on owl
         container.trigger('to.owl.carousel', newTab.parent().index());
 
-        // callback
-        container.trigger('psw-loadcomplete', {
+
+        finish(newTab.parent(), {
             'container' : container,
             'oldTab' : currentTab,
-            'newTab' : newTab,
+            'newTab' : newTab.parent(),
             'url': url,
             'currentUrl' : currentUrl
         });
-
-        /**
-         * Track ajax
-         */
-        if (typeof _gaq !== "undefined" && _gaq !== null) {
-            _gaq.push(['_trackPageview', args.url]);
-        }
     };
 
     self.openFromCache = function(element, url) {
@@ -280,12 +282,44 @@ var PageSwapper = function(args) {
         debug('psw openFromCache', url, element );
 
         var bodyClass = element.data('bodyclass');
+        if (args.selector === 'body') {
+            bodyClass += ' page-swapper ';
+        }
         jQuery('body').removeClass(jQuery('body').prop('class'))
             .addClass(bodyClass);
 
-        container.trigger('to.owl.carousel', element.index());
+
+        // callback
+       finish( element, {
+            'container' : container,
+            'oldTab' : container.find('> .active'),
+            'newTab' : element,
+            'url': url,
+        });
     };
 
+    /**
+     * Finish all and change item in owlCarousel
+     *
+     * @param owlItem
+     * @param callbackArgs
+     */
+    finish = function(owlItem, callbackArgs) {
+        // callback
+        container.trigger('psw-loadcomplete', callbackArgs);
+        container.trigger('to.owl.carousel', owlItem.index());
+
+        /**
+         * Track ajax
+         */
+        if (typeof _gaq !== "undefined" && _gaq !== null) {
+            _gaq.push(['_trackPageview', args.url]);
+        }
+    }
+
+    /**
+     * Checks hash and scroll to hash-offset
+     */
     checkHash = function() {
         debug('psw checkHash', self, container, args, hash, currentUrl);
         if (hash && jQuery('#' + hash).length > 0) {
