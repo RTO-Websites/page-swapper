@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 08.10.2015 17:20
+ * Last change: 09.10.2015 11:34
  *
  *
  * Requrires: jquery, modernizr, owl.carousel2
@@ -87,6 +87,13 @@ var PageSwapper = function(args) {
         curTab.data('bodyclass', jQuery('body').prop('class').replace('no-js', ''));
 
         debug('psw init', self, container, args);
+
+        if ( container.data('owl.carousel') && container.data('owl.carousel')._plugins &&
+            container.data('owl.carousel')._plugins.autoHeight) {
+            setInterval( function() {
+                container.data('owl.carousel')._plugins.autoHeight.update();
+            }, 300);
+        }
     };
 
     self.linkClick = function(event) {
