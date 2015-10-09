@@ -52,8 +52,14 @@ var PageSwapper = function(args) {
         container = jQuery( jQuery( args.container )[0] );
         tabSelector = args.tabSelector;
 
+        if ( container.is('body') ) {
+            // wrap all if container is body
+            container.wrapInner('<div class="psw-body"></div>');
+            container = container.find('> .psw-body');
+        }
+
         // wrap current content with item
-        container.wrapInner('<div class="tab psw-starttab" data-url="' + win.location.href + '"></div>');
+        container.wrapInner('<div class="tab psw-starttab psw-tab"></div>');
 
         // Set CSS and classes
         container.addClass('psw-container');
@@ -66,7 +72,7 @@ var PageSwapper = function(args) {
         jQuery(win).on('popstate', function() { self.open(doc.location.href); });
 
         var owlArgs = jQuery.extend( owlDefaultArgs, args.owlConfig );
-        owlArgs = jQuery.extend(owlArgs,{
+        owlArgs = jQuery.extend(owlArgs, {
             items: 1,
             autoHeight: true,
         });
@@ -76,8 +82,8 @@ var PageSwapper = function(args) {
 
         // add css and classes to first item
         var curTab = container.find('.psw-starttab').parent();
-        curTab.data('url', win.location.href)
-        curTab.data('title', doc.title)
+        curTab.attr('data-url', win.location.href);
+        curTab.data('title', doc.title);
         curTab.data('bodyclass', jQuery('body').prop('class').replace('no-js', ''));
 
         debug('psw init', self, container, args);
@@ -193,7 +199,7 @@ var PageSwapper = function(args) {
     loadComplete = function(data, textStatus, url, jqXHR) {
         jQuery('body').removeClass('psw-loading').addClass('psw-finish-loading');
 
-        var newTab = jQuery('<div class="tab" />'),
+        var newTab = jQuery('<div class="tab psw-tab" />'),
             bodyClass = '';
 
         if (!jqXHR) {
@@ -206,7 +212,7 @@ var PageSwapper = function(args) {
 
         debug('psw loadComplete', self, container, args, url, hash, currentUrl, jqXHR);
 
-        var currentTab = container.find('> .active'),
+        var currentTab = container.find('.owl-item.active .psw-tab'),
             title = data.match(/<title>(.*?)<\/title>/);
 
         if (title && title[1]) {
