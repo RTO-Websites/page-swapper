@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 09.10.2015 11:34
+ * Last change: 12.10.2015 08:56
  *
  *
  * Requrires: jquery, modernizr, owl.carousel2
@@ -85,6 +85,7 @@ var PageSwapper = function(args) {
         curTab.attr('data-url', win.location.href);
         curTab.data('title', doc.title);
         curTab.data('bodyclass', jQuery('body').prop('class').replace('no-js', ''));
+        curTab.addClass('psw-item');
 
         debug('psw init', self, container, args);
 
@@ -270,6 +271,7 @@ var PageSwapper = function(args) {
         // set url and title to data
         newTab.parent().attr('data-url', url).data('title', title);
         newTab.parent().data('bodyclass', bodyClass);
+        newTab.parent().addClass('psw-item');
 
         // jump to tab on owl
         container.trigger('to.owl.carousel', newTab.parent().index());
