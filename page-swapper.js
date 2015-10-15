@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 12.10.2015 08:56
+ * Last change: 15.10.2015 16:42
  *
  *
  * Requrires: jquery, modernizr, owl.carousel2
@@ -95,6 +95,10 @@ var PageSwapper = function(args) {
                 container.data('owl.carousel')._plugins.autoHeight.update();
             }, 300);
         }
+
+        // add psw-classes
+        container.find('> .owl-stage-outer').addClass('psw-stage-outer');
+        container.find('> .owl-stage-outer > .owl-stage').addClass('psw-stage');
     };
 
     self.linkClick = function(event) {
