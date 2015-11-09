@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 09.11.2015 15:20
+ * Last change: 09.11.2015 16:04
  *
  *
  * Requrires: jquery, modernizr, owl.carousel2
@@ -41,6 +41,7 @@ var PageSwapper = function(args) {
         addIdPrefixes,
         removeIdPrefixes,
         finish,
+        initFailed = false,
         init;
 
 
@@ -76,8 +77,16 @@ var PageSwapper = function(args) {
             autoHeight: true,
         });
 
+        container.addClass('psw-container');
+
         // init owl
-        container.owlCarousel(owlArgs);
+        try {
+            container.owlCarousel(owlArgs);
+        } catch(e) {
+            initFailed = true;
+            console.info('psw-init-error', e, container, owlArgs);
+            return;
+        }
 
         // add css and classes to first item
         var curTab = container.find('.psw-starttab');
@@ -98,7 +107,7 @@ var PageSwapper = function(args) {
     };
 
     self.linkClick = function(event) {
-        if (!event || !event.target) {
+        if (!event || !event.target || initFailed) {
             return;
         }
 
