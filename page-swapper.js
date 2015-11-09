@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 15.10.2015 16:42
+ * Last change: 09.11.2015 15:20
  *
  *
  * Requrires: jquery, modernizr, owl.carousel2
@@ -16,10 +16,10 @@ var PageSwapper = function(args) {
         self = this,
 
         defaultArgs = {
-            disableCache : false,
-            debug : false,
-            tabSelector : '.tab',
-            owlConfig: {}
+            disableCache: false,
+            debug: false,
+            owlConfig: {},
+            owlVersion: 2,
         },
 
         owlDefaultArgs = {
@@ -32,7 +32,6 @@ var PageSwapper = function(args) {
         host = 'http://' + win.location.host,
         currentUrl = win.location.href,
         hash = '',
-        tabSelector = null,
 
     // private functions
         debug,
@@ -46,13 +45,12 @@ var PageSwapper = function(args) {
 
 
     init = function() {
-        args = jQuery.extend( defaultArgs, args );
+        args = jQuery.extend(defaultArgs, args);
         args.id = 'page-swapper';
 
-        container = jQuery( jQuery( args.container )[0] );
-        tabSelector = args.tabSelector;
+        container = jQuery(jQuery(args.container)[0]);
 
-        if ( container.is('body') ) {
+        if (container.is('body')) {
             // wrap all if container is body
             container.wrapInner('<div class="psw-body"></div>');
             container = container.find('> .psw-body');
@@ -61,19 +59,20 @@ var PageSwapper = function(args) {
         // wrap current content with item
         container.wrapInner('<div class="tab psw-starttab psw-tab"></div>');
 
-        // Set CSS and classes
-        container.addClass('psw-container');
-        container.addClass('owl-carousel');
 
         // Set Click-Events to all <a>
         jQuery('body').on('click', 'a:not(a[href*=".jpg"], a[href*=".jpeg"], a[href*=".png"], a[href*=".gif"], a[href*=".JPG"], a[href*=".GIF"], a[href*=".PNG"], a[href*=".JPEG"])', self.linkClick);
 
         // pushstatechange -> backbutton
-        jQuery(win).on('popstate', function() { self.open(doc.location.href); });
+        jQuery(win).on('popstate', function() {
+            self.open(doc.location.href);
+        });
 
-        var owlArgs = jQuery.extend( owlDefaultArgs, args.owlConfig );
+        // arguments for owl
+        var owlArgs = jQuery.extend(owlDefaultArgs, args.owlConfig);
         owlArgs = jQuery.extend(owlArgs, {
             items: 1,
+            singleItem: true, // for owl 1
             autoHeight: true,
         });
 
@@ -81,24 +80,21 @@ var PageSwapper = function(args) {
         container.owlCarousel(owlArgs);
 
         // add css and classes to first item
-        var curTab = container.find('.psw-starttab').parent();
+        var curTab = container.find('.psw-starttab');
         curTab.attr('data-url', win.location.href);
         curTab.data('title', doc.title);
         curTab.data('bodyclass', jQuery('body').prop('class').replace('no-js', ''));
-        curTab.addClass('psw-item');
 
         debug('psw init', self, container, args);
 
-        if ( container.data('owl.carousel') && container.data('owl.carousel')._plugins &&
+        if (container.data('owl.carousel') && container.data('owl.carousel')._plugins &&
             container.data('owl.carousel')._plugins.autoHeight) {
-            setInterval( function() {
+            setInterval(function() {
                 container.data('owl.carousel')._plugins.autoHeight.update();
             }, 300);
         }
 
-        // add psw-classes
-        container.find('> .owl-stage-outer').addClass('psw-stage-outer');
-        container.find('> .owl-stage-outer > .owl-stage').addClass('psw-stage');
+        self.setClasses();
     };
 
     self.linkClick = function(event) {
@@ -117,6 +113,7 @@ var PageSwapper = function(args) {
         if (clickedElement.hasClass('no-ajax')) {
             return;
         }
+
         var url = clickedElement.prop('href');
         if (url.indexOf(host) === -1) {
             // external -> return
@@ -127,10 +124,10 @@ var PageSwapper = function(args) {
         }
 
         // Check for file-endings
-        var filteredFileEndings= ['zip', 'exe', 'rar', 'pdf', 'doc', 'gif', 'png', 'jpg', 'jpeg', 'bmp', 'mp4', 'mp3'],
+        var filteredFileEndings = ['zip', 'exe', 'rar', 'pdf', 'doc', 'gif', 'png', 'jpg', 'jpeg', 'bmp', 'mp4', 'mp3'],
             fileEnding = url.split('.');
-        fileEnding = fileEnding[ fileEnding.length -1 ];
-        if ( jQuery.inArray( fileEnding, filteredFileEndings ) !== -1 ) {
+        fileEnding = fileEnding[fileEnding.length - 1];
+        if (jQuery.inArray(fileEnding, filteredFileEndings) !== -1) {
             return;
         }
 
@@ -155,10 +152,10 @@ var PageSwapper = function(args) {
 
         // callback
         container.trigger('psw-beforeopen', {
-            'container' : container,
-            'url' : url,
+            'container': container,
+            'url': url,
             'hash': hash,
-            'currentUrl' : currentUrl
+            'currentUrl': currentUrl
         });
         debug('psw beforeOpen', self, container, args, url, hash, currentUrl);
 
@@ -167,7 +164,7 @@ var PageSwapper = function(args) {
             return;
         }
 
-        var cacheElement = container.find('.owl-item[data-url="' + url + '"]');
+        var cacheElement = container.find('.psw-tab[data-url="' + url + '"]');
         if (cacheElement.length > 0) {
             self.openFromCache(cacheElement, url);
             return;
@@ -186,16 +183,18 @@ var PageSwapper = function(args) {
             error: function() {
                 jQuery('body').removeClass('psw-loading');
                 jQuery('body').addClass('psw-loaderror');
-                errorTimeout = setTimeout(function() { jQuery('body').removeClass('psw-loaderror'); }, 1000);
+                errorTimeout = setTimeout(function() {
+                    jQuery('body').removeClass('psw-loaderror');
+                }, 1000);
             }
         });
 
         // callback
         container.trigger('psw-loadstart', {
-            'container' : container,
-            'url' : url,
+            'container': container,
+            'url': url,
             'hash': hash,
-            'currentUrl' : currentUrl
+            'currentUrl': currentUrl
         });
         debug('psw loadstart', self, container, args, url, hash, currentUrl);
     };
@@ -224,7 +223,8 @@ var PageSwapper = function(args) {
 
         debug('psw loadComplete', self, container, args, url, hash, currentUrl, jqXHR);
 
-        var currentTab = container.find('.owl-item.active .psw-tab'),
+
+        var currentTab = self.getCurrent(),
             title = data.match(/<title>(.*?)<\/title>/);
 
         if (title && title[1]) {
@@ -256,8 +256,16 @@ var PageSwapper = function(args) {
         }
 
         // add tab to swapper
-        container.trigger('add.owl.carousel', newTab);
-        container.trigger('refresh.owl.carousel');
+        if (args.owlVersion == 1) {
+            // owl carousel 1
+            container.data('owlCarousel').addItem(newTab);
+            // owl1 removes all classes and data from items
+            self.setClasses();
+        } else {
+            // owl carousel 2
+            container.trigger('add.owl.carousel', newTab);
+            container.trigger('refresh.owl.carousel');
+        }
 
         // set new ids for prevent mulitple ids
         addIdPrefixes(currentTab);
@@ -273,33 +281,40 @@ var PageSwapper = function(args) {
         changeUrl(url, title);
 
         // set url and title to data
-        newTab.parent().attr('data-url', url).data('title', title);
-        newTab.parent().data('bodyclass', bodyClass);
+        newTab.attr('data-url', url).data('title', title);
+        newTab.data('bodyclass', bodyClass);
         newTab.parent().addClass('psw-item');
 
         // jump to tab on owl
-        container.trigger('to.owl.carousel', newTab.parent().index());
-
+        self.jumpTo(newTab.parent().index());
 
         finish(newTab.parent(), {
-            'container' : container,
-            'oldTab' : currentTab,
-            'newTab' : newTab.parent(),
+            'container': container,
+            'oldTab': currentTab,
+            'newTab': newTab.parent(),
             'url': url,
-            'currentUrl' : currentUrl
+            'currentUrl': currentUrl
         });
     };
 
+    /**
+     * Jump to item that already exists
+     *
+     * @param element
+     * @param url
+     */
     self.openFromCache = function(element, url) {
-        addIdPrefixes(container.find('> .active'));
-        removeIdPrefixes(element);
+        // remove-id-prefixes from newtab and add to oldtab
+        var currentItem = self.getCurrent();
+        addIdPrefixes(currentItem);
+        removeIdPrefixes(element.parent());
 
         var oldHtml = element.html();
         element.empty().html(oldHtml); // for new js-parsing
 
         changeUrl(url, element.data('title'));
 
-        debug('psw openFromCache', url, element );
+        debug('psw openFromCache', url, element);
 
         var bodyClass = element.data('bodyclass');
         if (args.selector === 'body') {
@@ -310,10 +325,10 @@ var PageSwapper = function(args) {
 
 
         // callback
-       finish( element, {
-            'container' : container,
-            'oldTab' : container.find('> .active'),
-            'newTab' : element,
+        finish(element.parent(), {
+            'container': container,
+            'oldTab': self.getCurrent(),
+            'newTab': element.parent(),
             'url': url,
         });
     };
@@ -327,7 +342,9 @@ var PageSwapper = function(args) {
     finish = function(owlItem, callbackArgs) {
         // callback
         container.trigger('psw-loadcomplete', callbackArgs);
-        container.trigger('to.owl.carousel', owlItem.index());
+
+        // jump to tab on owl
+        self.jumpTo(owlItem.index());
 
         /**
          * Track ajax
@@ -338,15 +355,29 @@ var PageSwapper = function(args) {
     };
 
     /**
+     * Jumps to index in owl
+     *
+     * @param index
+     */
+    self.jumpTo = function(index) {
+        if (args.owlVersion == 1) {
+            container.data('owlCarousel').goTo(index); // v1
+        } else {
+            container.trigger('to.owl.carousel', index); // v2
+        }
+    };
+
+    /**
      * Checks hash and scroll to hash-offset
      */
     checkHash = function() {
         debug('psw checkHash', self, container, args, hash, currentUrl);
         if (hash && jQuery('#' + hash).length > 0) {
-            jQuery('html,body').animate({ scrollTop: jQuery('#' + hash).offset().top }, 600);
+            jQuery('html,body').animate({scrollTop: jQuery('#' + hash).offset().top}, 600);
             hash = '';
         }
     };
+
 
     /**
      *  set new ids for prevent mulitple ids
@@ -361,6 +392,7 @@ var PageSwapper = function(args) {
             }
         });
     };
+
     /**
      *  remove new ids for prevent mulitple ids
      *
@@ -375,12 +407,43 @@ var PageSwapper = function(args) {
         });
     };
 
+
+    /**
+     * Set classes for container and items
+     */
+    self.setClasses = function() {
+        // add psw-classes
+        container.addClass('psw-container');
+        container.addClass('owl-carousel');
+        container.find('> .owl-stage-outer, > .owl-wrapper-outer').addClass('psw-stage-outer');
+        container.find('> .owl-stage-outer > .owl-stage, > .owl-wrapper-outer > .owl-wrapper').addClass('psw-stage');
+
+        // add element classes
+        container.find('.psw-stage > .owl-item').addClass('psw-item');
+    };
+
+    /**
+     * return the current element
+     *
+     * @returns {*}
+     */
+    self.getCurrent = function() {
+        var curTab;
+        if (args.owlVersion == 1) {
+            curTab = container.find('.psw-item:nth-child(' + container.data('owlCarousel').currentItem + ')');
+        } else {
+            curTab = container.find('.psw-item.active')
+        }
+
+        return curTab;
+    };
+
     changeUrl = function(url, title) {
         currentUrl = url;
         // change pushstate
         if (win.history && typeof(win.history.pushState) !== 'undefined') {
             // pushState({  Params }, Title, Path);
-            win.history.pushState({ }, title, url);
+            win.history.pushState({}, title, url);
             doc.title = title;
         }
     };
@@ -395,8 +458,8 @@ var PageSwapper = function(args) {
     };
 
     debug = function() {
-        if ( args.debug ) {
-            console.info( arguments );
+        if (args.debug) {
+            console.info(arguments);
         }
     };
 
@@ -406,7 +469,7 @@ var PageSwapper = function(args) {
      * @returns {undefined}
      */
     self._debug = function() {
-        if ( args.debug ) {
+        if (args.debug) {
             args.debug = false;
         } else {
             args.debug = true;

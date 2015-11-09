@@ -11,12 +11,16 @@ $('body').pageSwapper({
     owlConfig: {
         animateOut: 'zoomOut',
         animateIn: 'zoomIn',
-    }
+    },
+    owlVersion: 2
 });
 ```
 Creates a zoomIn/Out transition on every paging.
 In animate the hole body, but you can use every class or id instead.
 Make sure these element is available on every page.
+
+Set owlVersion to 1 if you want to use owl 1.x instead of owl 2.0.
+
 
 OwlCarousel
 ---
