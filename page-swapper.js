@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 09.11.2015 16:04
+ * Last change: 16.03.2016 09:24
  *
  *
  * Requrires: jquery, modernizr, owl.carousel2
@@ -360,6 +360,9 @@ var PageSwapper = function(args) {
          */
         if (typeof _gaq !== "undefined" && _gaq !== null) {
             _gaq.push(['_trackPageview', args.url]);
+        }
+        if (typeof(ga) !== 'undefined' && ga !== null) {
+            ga('send', 'pageview', args.url);
         }
     };
 
