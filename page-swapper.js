@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 24.03.2016 09:53
+ * Last change: 24.03.2016 10:55
  *
  *
  * Requrires: $, modernizr, owl.carousel2
@@ -47,7 +47,7 @@ var PageSwapper = function(args) {
 
     init = function() {
         if (!win.$) {
-            win.$ = $;
+            win.$ = jQuery;
         }
 
         args = $.extend(defaultArgs, args);
@@ -492,14 +492,14 @@ var PageSwapper = function(args) {
     init();
 };
 
-$.fn.pageSwapper = function(args) {
+jQuery.fn.pageSwapper = function(args) {
     if (typeof(args) === 'undefined') {
         args = {};
     }
     args.selector = this.selector;
     this.each(function(index, element) {
         if (typeof(document.pageSwapperInstance) === 'undefined') {
-            args.container = $(element);
+            args.container = jQuery(element);
             document.pageSwapperInstance = new PageSwapper(args);
         }
     });
