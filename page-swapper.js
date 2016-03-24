@@ -1,9 +1,9 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 16.03.2016 16:09
+ * Last change: 24.03.2016 09:53
  *
  *
- * Requrires: jquery, modernizr, owl.carousel2
+ * Requrires: $, modernizr, owl.carousel2
  *
  * License: GPL v3
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -12,44 +12,48 @@
 
 var PageSwapper = function(args) {
     var win = window,
-        doc = win.document,
-        self = this,
+      doc = win.document,
+      self = this,
 
-        defaultArgs = {
-            disableCache: false,
-            debug: false,
-            owlConfig: {},
-            owlVersion: 2,
-        },
+      defaultArgs = {
+          disableCache: false,
+          debug: false,
+          owlConfig: {},
+          owlVersion: 2,
+      },
 
-        owlDefaultArgs = {
-            margin: 20,
-            mouseDrag: false,
-            touchDrag: false,
-        },
+      owlDefaultArgs = {
+          margin: 20,
+          mouseDrag: false,
+          touchDrag: false,
+      },
     // private vars
-        container = null,
-        host = 'http://' + win.location.host,
-        currentUrl = win.location.href,
-        hash = '',
+      container = null,
+      host = 'http://' + win.location.host,
+      currentUrl = win.location.href,
+      hash = '',
 
     // private functions
-        debug,
-        loadComplete,
-        checkHash,
-        changeUrl,
-        addIdPrefixes,
-        removeIdPrefixes,
-        finish,
-        initFailed = false,
-        init;
+      debug,
+      loadComplete,
+      checkHash,
+      changeUrl,
+      addIdPrefixes,
+      removeIdPrefixes,
+      finish,
+      initFailed = false,
+      init;
 
 
     init = function() {
-        args = jQuery.extend(defaultArgs, args);
+        if (!win.$) {
+            win.$ = $;
+        }
+
+        args = $.extend(defaultArgs, args);
         args.id = 'page-swapper';
 
-        container = jQuery(jQuery(args.container)[0]);
+        container = $($(args.container)[0]);
 
         if (container.is('body')) {
             // wrap all if container is body
@@ -62,16 +66,16 @@ var PageSwapper = function(args) {
 
 
         // Set Click-Events to all <a>
-        jQuery('body').on('click', 'a:not(a[href*=".jpg"], a[href*=".jpeg"], a[href*=".png"], a[href*=".gif"], a[href*=".JPG"], a[href*=".GIF"], a[href*=".PNG"], a[href*=".JPEG"])', self.linkClick);
+        $('body').on('click', 'a:not(a[href*=".jpg"], a[href*=".jpeg"], a[href*=".png"], a[href*=".gif"], a[href*=".JPG"], a[href*=".GIF"], a[href*=".PNG"], a[href*=".JPEG"])', self.linkClick);
 
         // pushstatechange -> backbutton
-        jQuery(win).on('popstate', function() {
+        $(win).on('popstate', function() {
             self.open(doc.location.href);
         });
 
         // arguments for owl
-        var owlArgs = jQuery.extend(owlDefaultArgs, args.owlConfig);
-        owlArgs = jQuery.extend(owlArgs, {
+        var owlArgs = $.extend(owlDefaultArgs, args.owlConfig);
+        owlArgs = $.extend(owlArgs, {
             items: 1,
             singleItem: true, // for owl 1
             autoHeight: true,
@@ -92,12 +96,12 @@ var PageSwapper = function(args) {
         var curTab = container.find('.psw-starttab');
         curTab.attr('data-url', win.location.href);
         curTab.data('title', doc.title);
-        curTab.data('bodyclass', jQuery('body').prop('class').replace('no-js', ''));
+        curTab.data('bodyclass', $('body').prop('class').replace('no-js', ''));
 
         debug('psw init', self, container, args);
 
         if (container.data('owl.carousel') && container.data('owl.carousel')._plugins &&
-            container.data('owl.carousel')._plugins.autoHeight) {
+          container.data('owl.carousel')._plugins.autoHeight) {
             setInterval(function() {
                 container.data('owl.carousel')._plugins.autoHeight.update();
             }, 300);
@@ -112,7 +116,7 @@ var PageSwapper = function(args) {
         }
 
         // Find <a> from clicked element
-        var clickedElement = jQuery(event.target);
+        var clickedElement = $(event.target);
         if (!clickedElement.is('a')) {
             clickedElement = clickedElement.closest('a');
         }
@@ -134,15 +138,15 @@ var PageSwapper = function(args) {
 
         // Check for file-endings
         var filteredFileEndings = ['zip', 'exe', 'rar', 'pdf', 'doc', 'gif', 'png', 'jpg', 'jpeg', 'bmp', 'mp4', 'mp3'],
-            fileEnding = url.split('.');
+          fileEnding = url.split('.');
         fileEnding = fileEnding[fileEnding.length - 1];
-        if (jQuery.inArray(fileEnding, filteredFileEndings) !== -1) {
+        if ($.inArray(fileEnding, filteredFileEndings) !== -1) {
             return;
         }
 
         // Start Opening
         event.preventDefault();
-        self.open(url);
+        self.open(url, event);
     };
 
     /**
@@ -151,7 +155,7 @@ var PageSwapper = function(args) {
      * @param {type} url
      * @returns {undefined}
      */
-    self.open = function(url) {
+    self.open = function(url, event) {
         var splittedUrl = url.split('#');
         hash = '';
         url = splittedUrl[0];
@@ -164,7 +168,8 @@ var PageSwapper = function(args) {
             'container': container,
             'url': url,
             'hash': hash,
-            'currentUrl': currentUrl
+            'currentUrl': currentUrl,
+            'clickEvent': event,
         });
         debug('psw beforeOpen', self, container, args, url, hash, currentUrl);
 
@@ -179,9 +184,9 @@ var PageSwapper = function(args) {
             return;
         }
 
-        jQuery('body').removeClass('psw-finish-loading').addClass('psw-loading');
+        $('body').removeClass('psw-finish-loading').addClass('psw-loading');
 
-        jQuery.ajax({
+        $.ajax({
             dataType: 'text',
             type: 'GET',
             url: url,
@@ -190,10 +195,10 @@ var PageSwapper = function(args) {
                 loadComplete(data, textStatus, url, jqXHR);
             },
             error: function() {
-                jQuery('body').removeClass('psw-loading');
-                jQuery('body').addClass('psw-loaderror');
+                $('body').removeClass('psw-loading');
+                $('body').addClass('psw-loaderror');
                 errorTimeout = setTimeout(function() {
-                    jQuery('body').removeClass('psw-loaderror');
+                    $('body').removeClass('psw-loaderror');
                 }, 1000);
             }
         });
@@ -217,10 +222,10 @@ var PageSwapper = function(args) {
      * @returns {undefined}
      */
     loadComplete = function(data, textStatus, url, jqXHR) {
-        jQuery('body').removeClass('psw-loading').addClass('psw-finish-loading');
+        $('body').removeClass('psw-loading').addClass('psw-finish-loading');
 
-        var newTab = jQuery('<div class="tab psw-tab" />'),
-            bodyClass = '';
+        var newTab = $('<div class="tab psw-tab" />'),
+          bodyClass = '';
 
         if (!jqXHR) {
             return false;
@@ -234,7 +239,7 @@ var PageSwapper = function(args) {
 
 
         var currentTab = self.getCurrent(),
-            title = data.match(/<title>(.*?)<\/title>/);
+          title = data.match(/<title>(.*?)<\/title>/);
 
         if (title && title[1]) {
             title = title[1];
@@ -244,19 +249,19 @@ var PageSwapper = function(args) {
 
         // Parse data
         data = data.replace('<body', '<body><div id="psw-body"').replace('</body>', '</div></body');
-        var newHtml = jQuery.parseHTML(data, true);
-        newHtml = jQuery(newHtml);
+        var newHtml = $.parseHTML(data, true);
+        newHtml = $(newHtml);
 
         if (newHtml.filter('#psw-body').length > 0) {
             // Add new class to body
             bodyClass = newHtml.filter('#psw-body').prop('class').replace('no-js', '');
-            var oldClasses = jQuery('body').prop('class');
+            var oldClasses = $('body').prop('class');
 
             if (args.selector === 'body') {
                 bodyClass += ' page-swapper ';
             }
-            jQuery('body').removeClass(oldClasses)
-                .addClass(bodyClass);
+            $('body').removeClass(oldClasses)
+              .addClass(bodyClass);
         }
 
         var content = newHtml.find(args.selector);
@@ -329,8 +334,8 @@ var PageSwapper = function(args) {
         if (args.selector === 'body') {
             bodyClass += ' page-swapper ';
         }
-        jQuery('body').removeClass(jQuery('body').prop('class'))
-            .addClass(bodyClass);
+        $('body').removeClass($('body').prop('class'))
+          .addClass(bodyClass);
 
 
         // callback
@@ -384,8 +389,8 @@ var PageSwapper = function(args) {
      */
     checkHash = function() {
         debug('psw checkHash', self, container, args, hash, currentUrl);
-        if (hash && jQuery('#' + hash).length > 0) {
-            jQuery('html,body').animate({scrollTop: jQuery('#' + hash).offset().top}, 600);
+        if (hash && $('#' + hash).length > 0) {
+            $('html,body').animate({scrollTop: $('#' + hash).offset().top}, 600);
             hash = '';
         }
     };
@@ -480,25 +485,21 @@ var PageSwapper = function(args) {
      *
      * @returns {undefined}
      */
-    self._debug = function() {
-        if (args.debug) {
-            args.debug = false;
-        } else {
-            args.debug = true;
-        }
+    self._debug = function(debug) {
+        args.debug = debug;
     };
 
     init();
 };
 
-jQuery.fn.pageSwapper = function(args) {
+$.fn.pageSwapper = function(args) {
     if (typeof(args) === 'undefined') {
         args = {};
     }
     args.selector = this.selector;
     this.each(function(index, element) {
         if (typeof(document.pageSwapperInstance) === 'undefined') {
-            args.container = jQuery(element);
+            args.container = $(element);
             document.pageSwapperInstance = new PageSwapper(args);
         }
     });

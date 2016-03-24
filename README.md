@@ -34,7 +34,7 @@ Callbacks
 ```
 	psw-beforeopen -> Before opening a new url
 	psw-loadstart -> After begin of ajax-request (not fired if loading from cache)
-	psw-loadcomplete -> After loading is complete (not fired if loading from cache)
+	psw-loadcomplete -> After loading is complete
 ```
 
 Usage
@@ -52,3 +52,6 @@ args has the following information:
 	'newTab' : newTab,
 	'url': url
 	'currentUrl' : currentUrl
+	
+psw-beforeopen has also clickEvent in args.
+
