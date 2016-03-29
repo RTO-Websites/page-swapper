@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 24.03.2016 10:55
+ * Last change: 29.03.2016 14:35
  *
  *
  * Requrires: $, modernizr, owl.carousel2
@@ -97,6 +97,7 @@ var PageSwapper = function(args) {
         curTab.attr('data-url', win.location.href);
         curTab.data('title', doc.title);
         curTab.data('bodyclass', $('body').prop('class').replace('no-js', ''));
+        curTab.data('originalhtml', curTab.html());
 
         debug('psw init', self, container, args);
 
@@ -284,6 +285,8 @@ var PageSwapper = function(args) {
         // set new ids for prevent mulitple ids
         addIdPrefixes(currentTab);
 
+        newTab.data('originalhtml', content.html());
+
         // add html to tab
         try {
             newTab.html(content.html());
@@ -323,7 +326,7 @@ var PageSwapper = function(args) {
         addIdPrefixes(currentItem);
         removeIdPrefixes(element.parent());
 
-        var oldHtml = element.html();
+        var oldHtml = element.data('originalhtml');
         element.empty().html(oldHtml); // for new js-parsing
 
         changeUrl(url, element.data('title'));
