@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 31.03.2016 10:19
+ * Last change: 12.05.2016 14:23
  *
  *
  * Requrires: $, modernizr, owl.carousel2
@@ -26,6 +26,7 @@ var PageSwapper = function (args) {
       margin: 20,
       mouseDrag: false,
       touchDrag: false,
+      disableHash: false
     },
   // private vars
     container = null,
@@ -112,6 +113,9 @@ var PageSwapper = function (args) {
     self.setClasses();
   };
 
+  self.setArgs = function(newArgs) {
+    args = $.extend(args, newArgs);
+  };
 
   /**
    * Click-Event for links
@@ -413,7 +417,7 @@ var PageSwapper = function (args) {
    */
   checkHash = function () {
     debug('psw checkHash', self, container, args, hash, currentUrl);
-    if (hash && $('#' + hash).length > 0) {
+    if (!args.disableHash && hash && $('#' + hash).length > 0) {
       $('html,body').animate({scrollTop: $('#' + hash).offset().top}, 600);
       hash = '';
     }
