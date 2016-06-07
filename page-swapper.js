@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 12.05.2016 14:23
+ * Last change: 07.06.2016 16:38
  *
  *
  * Requrires: $, modernizr, owl.carousel2
@@ -33,6 +33,7 @@ var PageSwapper = function (args) {
     host = 'http://' + win.location.host,
     currentUrl = win.location.href,
     hash = '',
+    initFailed = false,
 
   // private functions
     debug,
@@ -43,7 +44,6 @@ var PageSwapper = function (args) {
     removeIdPrefixes,
     removeTab,
     finish,
-    initFailed = false,
     init;
 
 
@@ -113,7 +113,7 @@ var PageSwapper = function (args) {
     self.setClasses();
   };
 
-  self.setArgs = function(newArgs) {
+  self.setArgs = function (newArgs) {
     args = $.extend(args, newArgs);
   };
 
@@ -208,7 +208,7 @@ var PageSwapper = function (args) {
       dataType: 'text',
       type: 'GET',
       url: url,
-      data: null,
+      data: {pswLoad: 1},
       success: function (data, textStatus, jqXHR) {
         loadComplete(data, textStatus, url, jqXHR);
       },
@@ -356,7 +356,7 @@ var PageSwapper = function (args) {
 
     changeUrl(url, element.data('title'));
 
-    debug('psw openFromCache', url, element);
+    debug('psw openFromCache', url, element, oldHtml);
 
     var bodyClass = element.data('bodyclass');
     if (args.selector === 'body') {
@@ -387,6 +387,8 @@ var PageSwapper = function (args) {
 
     // jump to tab on owl
     self.jumpTo(owlItem.index());
+
+    debug('psw finish', owlItem, owlItem.index());
 
     /**
      * Track ajax
