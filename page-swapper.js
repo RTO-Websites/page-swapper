@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 07.06.2016 16:38
+ * Last change: 09.06.2016 15:18
  *
  *
  * Requrires: $, modernizr, owl.carousel2
@@ -510,7 +510,7 @@ var PageSwapper = function (args) {
     if (win.history && typeof(win.history.pushState) !== 'undefined') {
       // pushState({  Params }, Title, Path);
       win.history.pushState({}, title, url);
-      doc.title = title;
+      doc.title = jQuery('<textarea />').html(title).text();
     }
   };
 
