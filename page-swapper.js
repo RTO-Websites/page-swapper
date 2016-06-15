@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 09.06.2016 15:18
+ * Last change: 15.06.2016 16:49
  *
  *
  * Requrires: $, modernizr, owl.carousel2
@@ -34,20 +34,10 @@ var PageSwapper = function (args) {
     currentUrl = win.location.href,
     hash = '',
     initFailed = false,
-
-  // private functions
-    debug,
-    loadComplete,
-    checkHash,
-    changeUrl,
-    addIdPrefixes,
-    removeIdPrefixes,
-    removeTab,
-    finish,
-    init;
+    pswXhr = null;
 
 
-  init = function () {
+  var init = function () {
     if (!win.$) {
       win.$ = jQuery;
     }
@@ -190,21 +180,20 @@ var PageSwapper = function (args) {
       return;
     }
 
-    var cacheElement = container.find('.psw-tab[data-url="' + url + '"]');
-    if (!cacheElement.length) {
-      // find with trailing slash
-      cacheElement = container.find('.psw-tab[data-url="' + url + '/"]');
-    }
-
-    if (cacheElement.length > 0) {
-      // open from cache
-      self.openFromCache(cacheElement, url, event);
+    var hasCache = checkForCache(url);
+    if (hasCache) {
       return;
     }
 
     $('body').removeClass('psw-finish-loading').addClass('psw-loading');
 
-    $.ajax({
+    if (pswXhr) {
+      // abort previous ajax
+      pswXhr.abort();
+      pswXhr = null;
+    }
+
+    pswXhr = $.ajax({
       dataType: 'text',
       type: 'GET',
       url: url,
@@ -240,10 +229,12 @@ var PageSwapper = function (args) {
    * @param {type} url
    * @returns {undefined}
    */
-  loadComplete = function (data, textStatus, url, jqXHR) {
+  var loadComplete = function (data, textStatus, url, jqXHR) {
     $('body').removeClass('psw-loading').addClass('psw-finish-loading');
 
     var newTab = $('<div class="tab psw-tab" />'),
+      currentTab = self.getCurrent(),
+      title = '',
       bodyClass = '';
 
     if (!jqXHR) {
@@ -256,37 +247,9 @@ var PageSwapper = function (args) {
 
     debug('psw loadComplete', self, container, args, url, hash, currentUrl, jqXHR);
 
+    title = getTitleFromData(data);
 
-    var currentTab = self.getCurrent(),
-      title = data.match(/<title>(.*?)<\/title>/);
-
-    if (title && title[1]) {
-      title = title[1];
-    } else {
-      title = '';
-    }
-
-    // Parse data
-    data = data.replace('<body', '<body><div id="psw-body"').replace('</body>', '</div></body');
-    var newHtml = $.parseHTML(data, true);
-    newHtml = $(newHtml);
-
-    if (newHtml.filter('#psw-body').length > 0) {
-      // Add new class to body
-      bodyClass = newHtml.filter('#psw-body').prop('class').replace('no-js', '');
-      var oldClasses = $('body').prop('class');
-
-      if (args.selector === 'body') {
-        bodyClass += ' page-swapper ';
-      }
-      $('body').removeClass(oldClasses)
-        .addClass(bodyClass);
-    }
-
-    var content = newHtml.find(args.selector);
-    if (content.length === 0) {
-      content = newHtml.filter('#psw-body');
-    }
+    content = getTabFromData(data);
 
     // add tab to swapper
     if (args.owlVersion == 1) {
@@ -306,12 +269,7 @@ var PageSwapper = function (args) {
     newTab.data('originalhtml', content.html());
 
     // add html to tab
-    try {
-      newTab.html(content.html());
-    } catch (e) {
-      content.find('script').remove();
-      newTab.html(content.html());
-    }
+    setHtmlToTab(newTab, content);
 
     changeUrl(url, title);
 
@@ -319,9 +277,6 @@ var PageSwapper = function (args) {
     newTab.attr('data-url', url).data('title', title);
     newTab.data('bodyclass', bodyClass);
     newTab.parent().addClass('psw-item');
-
-    // jump to tab on owl
-    self.jumpTo(newTab.parent().index());
 
     finish(newTab.parent(), {
       'container': container,
@@ -344,27 +299,26 @@ var PageSwapper = function (args) {
     addIdPrefixes(currentItem);
     removeIdPrefixes(element.parent());
 
-    var oldHtml = element.data('originalhtml');
+    var orgHtml = element.data('originalhtml');
 
-    if (!oldHtml) {
-      removeTab(element);
-      self.open(url, event);
-      return;
+    // reset html for new js-parsing
+    if (!orgHtml || !orgHtml.length) {
+      getOriginalHtml(element);
+    } else {
+      element.empty().html(orgHtml); // for new js-parsing
     }
-
-    element.empty().html(oldHtml); // for new js-parsing
 
     changeUrl(url, element.data('title'));
 
-    debug('psw openFromCache', url, element, oldHtml);
+    debug('psw openFromCache', url, element, orgHtml);
 
     var bodyClass = element.data('bodyclass');
     if (args.selector === 'body') {
       bodyClass += ' page-swapper ';
     }
+
     $('body').removeClass($('body').prop('class'))
       .addClass(bodyClass);
-
 
     // callback
     finish(element.parent(), {
@@ -381,7 +335,7 @@ var PageSwapper = function (args) {
    * @param owlItem
    * @param callbackArgs
    */
-  finish = function (owlItem, callbackArgs) {
+  var finish = function (owlItem, callbackArgs) {
     // callback
     container.trigger('psw-loadcomplete', callbackArgs);
 
@@ -408,16 +362,33 @@ var PageSwapper = function (args) {
    */
   self.jumpTo = function (index) {
     if (args.owlVersion == 1) {
+      console.info('jump', index, container.data('owlCarousel'));
       container.data('owlCarousel').goTo(index); // v1
     } else {
       container.trigger('to.owl.carousel', index); // v2
     }
   };
 
+  var checkForCache = function (url) {
+    var cacheElement = container.find('.psw-tab[data-url="' + url + '"]');
+    if (!cacheElement.length) {
+      // find with trailing slash
+      cacheElement = container.find('.psw-tab[data-url="' + url + '/"]');
+    }
+
+    if (cacheElement.length > 0) {
+      // open from cache
+      self.openFromCache(cacheElement, url, event);
+      return true;
+    }
+
+    return false;
+  };
+
   /**
    * Checks hash and scroll to hash-offset
    */
-  checkHash = function () {
+  var checkHash = function () {
     debug('psw checkHash', self, container, args, hash, currentUrl);
     if (!args.disableHash && hash && $('#' + hash).length > 0) {
       $('html,body').animate({scrollTop: $('#' + hash).offset().top}, 600);
@@ -432,7 +403,7 @@ var PageSwapper = function (args) {
    * @param {type} tab
    * @returns {undefined}
    */
-  addIdPrefixes = function (tab) {
+  var addIdPrefixes = function (tab) {
     tab.find('*').each(function (index, element) {
       if (element.id.length > 0) {
         element.id = 'psw-rm-' + element.id;
@@ -445,8 +416,8 @@ var PageSwapper = function (args) {
    *
    * @param tab
    */
-  removeTab = function (tab) {
-    // add tab to swapper
+  var removeTab = function (tab) {
+    // remove tab from swapper
     if (args.owlVersion == 1) {
       // owl carousel 1
       container.data('owlCarousel').removeItem(tab.index());
@@ -465,7 +436,7 @@ var PageSwapper = function (args) {
    * @param {type} tab
    * @returns {undefined}
    */
-  removeIdPrefixes = function (tab) {
+  var removeIdPrefixes = function (tab) {
     tab.find('*').each(function (index, element) {
       if (element.id.length > 0) {
         element.id = element.id.replace('psw-rm-', '');
@@ -504,7 +475,7 @@ var PageSwapper = function (args) {
     return curTab;
   };
 
-  changeUrl = function (url, title) {
+  var changeUrl = function (url, title) {
     currentUrl = url;
     // change pushstate
     if (win.history && typeof(win.history.pushState) !== 'undefined') {
@@ -512,6 +483,93 @@ var PageSwapper = function (args) {
       win.history.pushState({}, title, url);
       doc.title = jQuery('<textarea />').html(title).text();
     }
+  };
+
+
+  /**
+   * Gets tab-content from xhr-data
+   *
+   * @param data
+   * @returns {*}
+   */
+  var getTabFromData = function (data) {
+    // Parse data
+    data = data.replace('<body', '<body><div id="psw-body"').replace('</body>', '</div></body');
+    var newHtml = $.parseHTML(data, true);
+    newHtml = $(newHtml);
+
+    if (newHtml.filter('#psw-body').length > 0) {
+      // Add new class to body
+      bodyClass = newHtml.filter('#psw-body').prop('class').replace('no-js', '');
+      var oldClasses = $('body').prop('class');
+
+      if (args.selector === 'body') {
+        bodyClass += ' page-swapper ';
+      }
+      $('body').removeClass(oldClasses)
+        .addClass(bodyClass);
+    }
+
+    var content = newHtml.find(args.selector);
+    if (content.length === 0) {
+      content = newHtml.filter('#psw-body');
+    }
+
+    return content;
+  };
+
+  /**
+   * Loads page and get html
+   *
+   * @param tab
+   */
+  var getOriginalHtml = function (tab) {
+    debug('psw getOrgHtml', tab, tab.data('url'));
+    pswXhr = $.ajax({
+      dataType: 'text',
+      type: 'GET',
+      url: tab.data('url'),
+      data: {pswLoad: 1},
+      success: function (data, textStatus, jqXHR) {
+        var content = getTabFromData(data);
+        tab.data('originalhtml', content.html());
+        // add html to tab
+        setHtmlToTab(tab, content);
+        debug('psw getOrgHtml finish', tab, content.html());
+      },
+    });
+  };
+
+  /**
+   * Sets content to tab
+   *
+   * @param tab
+   * @param content
+   */
+  var setHtmlToTab = function (tab, content) {
+    try {
+      tab.empty().html(content.html());
+    } catch (e) {
+      content.find('script').remove();
+      tab.empty().html(content.html());
+    }
+  };
+
+  /**
+   * Extract title from xhr-data
+   * @param data
+   * @returns {*}
+   */
+  var getTitleFromData = function (data) {
+    var title = data.match(/<title>(.*?)<\/title>/);
+
+    if (title && title[1]) {
+      title = title[1];
+    } else {
+      title = '';
+    }
+
+    return title;
   };
 
   /**
@@ -523,7 +581,7 @@ var PageSwapper = function (args) {
     currentUrl = url;
   };
 
-  debug = function () {
+  var debug = function () {
     if (args.debug) {
       console.info(arguments);
     }
