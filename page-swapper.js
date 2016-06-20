@@ -1,9 +1,9 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 15.06.2016 16:49
+ * Last change: 20.06.2016 08:45
  *
  *
- * Requrires: $, modernizr, owl.carousel2
+ * Requrires: jQuery, modernizr, owl.carousel2
  *
  * License: GPL v3
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
