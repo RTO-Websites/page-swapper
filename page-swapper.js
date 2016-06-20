@@ -293,7 +293,7 @@ var PageSwapper = function (args) {
    * @param element
    * @param url
    */
-  self.openFromCache = function (element, url, event) {
+  self.openFromCache = function (element, url) {
     // remove-id-prefixes from newtab and add to oldtab
     var currentItem = self.getCurrent();
     addIdPrefixes(currentItem);
@@ -369,6 +369,12 @@ var PageSwapper = function (args) {
     }
   };
 
+  /**
+   * Check if page is already loaded
+   *
+   * @param url
+   * @returns {boolean}
+   */
   var checkForCache = function (url) {
     var cacheElement = container.find('.psw-tab[data-url="' + url + '"]');
     if (!cacheElement.length) {
@@ -378,7 +384,7 @@ var PageSwapper = function (args) {
 
     if (cacheElement.length > 0) {
       // open from cache
-      self.openFromCache(cacheElement, url, event);
+      self.openFromCache(cacheElement, url);
       return true;
     }
 
