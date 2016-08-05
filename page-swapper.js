@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 20.06.2016 08:45
+ * Last change: 05.08.2016 16:10
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -352,6 +352,13 @@ var PageSwapper = function (args) {
     }
     if (typeof(ga) !== 'undefined' && ga !== null) {
       ga('send', 'pageview', location.pathname);
+    }
+
+    if (typeof(Piwik) !== 'undefined' && Piwik !== null) {
+      var tracker = Piwik.getTracker();
+      tracker.setCustomUrl(document.href);
+      tracker.setDocumentTitle(document.title);
+      tracker.trackPageView();
     }
   };
 
