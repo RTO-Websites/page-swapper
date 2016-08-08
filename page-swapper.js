@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 05.08.2016 16:10
+ * Last change: 08.08.2016 08:36
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -356,7 +356,7 @@ var PageSwapper = function (args) {
 
     if (typeof(Piwik) !== 'undefined' && Piwik !== null) {
       var tracker = Piwik.getTracker();
-      tracker.setCustomUrl(document.href);
+      tracker.setCustomUrl(window.location.href);
       tracker.setDocumentTitle(document.title);
       tracker.trackPageView();
     }
