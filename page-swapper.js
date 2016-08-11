@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 08.08.2016 08:36
+ * Last change: 11.08.2016 15:29
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -28,7 +28,7 @@ var PageSwapper = function (args) {
       touchDrag: false,
       disableHash: false
     },
-  // private vars
+    // private vars
     container = null,
     host = 'http://' + win.location.host,
     currentUrl = win.location.href,
@@ -248,8 +248,10 @@ var PageSwapper = function (args) {
     debug('psw loadComplete', self, container, args, url, hash, currentUrl, jqXHR);
 
     title = getTitleFromData(data);
+    tabData = getTabFromData(data);
 
-    content = getTabFromData(data);
+    content = tabData.content;
+    bodyClass = tabData.bodyClass;
 
     // add tab to swapper
     if (args.owlVersion == 1) {
@@ -508,7 +510,8 @@ var PageSwapper = function (args) {
   var getTabFromData = function (data) {
     // Parse data
     data = data.replace('<body', '<body><div id="psw-body"').replace('</body>', '</div></body');
-    var newHtml = $.parseHTML(data, true);
+    var newHtml = $.parseHTML(data, true),
+      bodyClass;
     newHtml = $(newHtml);
 
     if (newHtml.filter('#psw-body').length > 0) {
@@ -528,7 +531,7 @@ var PageSwapper = function (args) {
       content = newHtml.filter('#psw-body');
     }
 
-    return content;
+    return {content: content, bodyClass: bodyClass};
   };
 
   /**
@@ -544,7 +547,7 @@ var PageSwapper = function (args) {
       url: tab.data('url'),
       data: {pswLoad: 1},
       success: function (data, textStatus, jqXHR) {
-        var content = getTabFromData(data);
+        var content = getTabFromData(data).content;
         tab.data('originalhtml', content.html());
         // add html to tab
         setHtmlToTab(tab, content);
