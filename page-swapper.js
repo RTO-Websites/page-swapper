@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 11.08.2016 15:29
+ * Last change: 12.09.2016 09:21
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -30,7 +30,7 @@ var PageSwapper = function (args) {
     },
     // private vars
     container = null,
-    host = 'http://' + win.location.host,
+    host = win.location.protocol + '//' + win.location.host,
     currentUrl = win.location.href,
     hash = '',
     initFailed = false,
