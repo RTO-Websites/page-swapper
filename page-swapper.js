@@ -18,22 +18,21 @@ var PageSwapper = function (args) {
     defaultArgs = {
       disableCache: false,
       debug: false,
-      owlConfig: {},
-      owlVersion: 2,
+      sliderConfig: {},
+      //owlVersion: 2,
+
+      sliderType: 'owl',
     },
 
-    owlDefaultArgs = {
-      margin: 20,
-      mouseDrag: false,
-      touchDrag: false,
-      disableHash: false
-    },
     // private vars
     container = null,
     host = win.location.protocol + '//' + win.location.host,
     currentUrl = win.location.href,
     hash = '',
     initFailed = false,
+
+    sliderArgs = {};
+
     pswXhr = null;
 
 
@@ -46,6 +45,12 @@ var PageSwapper = function (args) {
     args.id = 'page-swapper';
 
     container = $($(args.container)[0]);
+
+    sliderArgs = {
+      args: args,
+      container: container,
+      instance: self,
+    };
 
     if (container.is('body')) {
       // wrap all if container is body
@@ -65,24 +70,11 @@ var PageSwapper = function (args) {
       self.open(doc.location.href);
     });
 
-    // arguments for owl
-    var owlArgs = $.extend(owlDefaultArgs, args.owlConfig);
-    owlArgs = $.extend(owlArgs, {
-      items: 1,
-      singleItem: true, // for owl 1
-      autoHeight: true,
-    });
 
     container.addClass('psw-container');
 
-    // init owl
-    try {
-      container.owlCarousel(owlArgs);
-    } catch (e) {
-      initFailed = true;
-      console.info('psw-init-error', e, container, owlArgs);
-      return;
-    }
+    // init slider
+    PageSwapper.sliders[sliderType].init(sliderArgs);
 
     // add css and classes to first item
     var curTab = container.find('.psw-starttab');
@@ -92,13 +84,6 @@ var PageSwapper = function (args) {
     curTab.data('originalhtml', '');
 
     debug('psw init', self, container, args);
-
-    if (container.data('owl.carousel') && container.data('owl.carousel')._plugins &&
-      container.data('owl.carousel')._plugins.autoHeight) {
-      setInterval(function () {
-        container.data('owl.carousel')._plugins.autoHeight.update();
-      }, 300);
-    }
 
     self.setClasses();
   };
@@ -254,16 +239,7 @@ var PageSwapper = function (args) {
     bodyClass = tabData.bodyClass;
 
     // add tab to swapper
-    if (args.owlVersion == 1) {
-      // owl carousel 1
-      container.data('owlCarousel').addItem(newTab);
-      // owl1 removes all classes and data from items
-      self.setClasses();
-    } else {
-      // owl carousel 2
-      container.trigger('add.owl.carousel', newTab);
-      container.trigger('refresh.owl.carousel');
-    }
+    PageSwapper.sliders[args.sliderType].add(sliderArgs, newTab);
 
     // set new ids for prevent mulitple ids
     addIdPrefixes(currentTab);
@@ -370,12 +346,7 @@ var PageSwapper = function (args) {
    * @param index
    */
   self.jumpTo = function (index) {
-    if (args.owlVersion == 1) {
-      console.info('jump', index, container.data('owlCarousel'));
-      container.data('owlCarousel').goTo(index); // v1
-    } else {
-      container.trigger('to.owl.carousel', index); // v2
-    }
+    PageSwapper.sliders[args.sliderType].to(sliderArgs, index);
   };
 
   /**
@@ -432,17 +403,7 @@ var PageSwapper = function (args) {
    * @param tab
    */
   var removeTab = function (tab) {
-    // remove tab from swapper
-    if (args.owlVersion == 1) {
-      // owl carousel 1
-      container.data('owlCarousel').removeItem(tab.index());
-      // owl1 removes all classes and data from items
-      self.setClasses();
-    } else {
-      // owl carousel 2
-      container.trigger('remove.owl.carousel', tab.index());
-      container.trigger('refresh.owl.carousel');
-    }
+    PageSwapper.sliders[args.sliderType].remove(sliderArgs, tab);
   };
 
   /**
@@ -466,12 +427,8 @@ var PageSwapper = function (args) {
   self.setClasses = function () {
     // add psw-classes
     container.addClass('psw-container');
-    container.addClass('owl-carousel');
-    container.find('> .owl-stage-outer, > .owl-wrapper-outer').addClass('psw-stage-outer');
-    container.find('> .owl-stage-outer > .owl-stage, > .owl-wrapper-outer > .owl-wrapper').addClass('psw-stage');
 
-    // add element classes
-    container.find('.psw-stage > .owl-item').addClass('psw-item');
+    PageSwapper.sliders[args.sliderType].setClasses(sliderArgs);
   };
 
   /**
@@ -480,14 +437,7 @@ var PageSwapper = function (args) {
    * @returns {*}
    */
   self.getCurrent = function () {
-    var curTab;
-    if (args.owlVersion == 1) {
-      curTab = container.find('.psw-item:nth-child(' + container.data('owlCarousel').currentItem + ')');
-    } else {
-      curTab = container.find('.psw-item.active')
-    }
-
-    return curTab;
+    PageSwapper.sliders[args.sliderType].getCurrent(sliderArgs);
   };
 
   var changeUrl = function (url, title) {
