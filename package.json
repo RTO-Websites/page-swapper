@@ -1,0 +1,23 @@
+{
+  "name": "page-swapper",
+  "version": "1.2.6",
+  "description": "",
+  "main": "page-swapper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crazypsycho/post-gallery"
+  },
+  "keywords": [
+  ],
+  "author": "Sascha Hennemann",
+  "license": "MIT",
+  "dependencies": {
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-uglify": "^0.8.0",
+    "load-grunt-tasks": "^3.2.0"
+  }
+}
