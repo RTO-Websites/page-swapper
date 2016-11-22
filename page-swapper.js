@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 12.09.2016 09:21
+ * Last change: 22.11.2016 14:09
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -33,7 +33,7 @@ var PageSwapper = function (args) {
 
     sliderArgs = {};
 
-    pswXhr = null;
+  pswXhr = null;
 
 
   var init = function () {
@@ -74,7 +74,7 @@ var PageSwapper = function (args) {
     container.addClass('psw-container');
 
     // init slider
-    PageSwapper.sliders[sliderType].init(sliderArgs);
+    PageSwapper.sliders[args.sliderType].init(sliderArgs);
 
     // add css and classes to first item
     var curTab = container.find('.psw-starttab');
@@ -437,7 +437,7 @@ var PageSwapper = function (args) {
    * @returns {*}
    */
   self.getCurrent = function () {
-    PageSwapper.sliders[args.sliderType].getCurrent(sliderArgs);
+    return PageSwapper.sliders[args.sliderType].getCurrent(sliderArgs);
   };
 
   var changeUrl = function (url, title) {
@@ -577,3 +577,5 @@ jQuery.fn.pageSwapper = function (args) {
     }
   });
 };
+
+PageSwapper.sliders = {};

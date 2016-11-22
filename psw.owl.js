@@ -1,6 +1,13 @@
-/**
- * Created by shennemann on 21.11.2016.
- */
+/************************************
+ * Author: Sascha Hennemann
+ * Last change: 22.11.2016 14:09
+ *
+ *
+ * Requrires: jQuery, modernizr, owl.carousel2
+ *
+ * License: GPL v3
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ ************************************/
 
 PageSwapper.sliders.owl = {
 
@@ -13,7 +20,7 @@ PageSwapper.sliders.owl = {
 
   init: function(psw) {
     // arguments for owl
-    var owlArgs = $.extend(owlDefaultArgs, psw.args.sliderConfig);
+    var owlArgs = $.extend(PageSwapper.sliders.owl.owlDefaultArgs, psw.args.owlConfig, psw.args.sliderConfig);
     owlArgs = $.extend(owlArgs, {
       items: 1,
       singleItem: true, // for owl 1
