@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 22.11.2016 14:09
+ * Last change: 14.02.2017 08:21
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
