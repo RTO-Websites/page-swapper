@@ -150,6 +150,11 @@ var PageSwapper = function (args) {
       hash = splittedUrl[1];
     }
 
+    if (currentUrl === url) {
+      checkHash();
+      return;
+    }
+
     // callback
     container.trigger('psw-beforeopen', {
       'container': container,
@@ -159,11 +164,6 @@ var PageSwapper = function (args) {
       'clickEvent': event,
     });
     debug('psw beforeOpen', self, container, args, url, hash, currentUrl);
-
-    if (currentUrl === url) {
-      checkHash();
-      return;
-    }
 
     var hasCache = checkForCache(url);
     if (hasCache) {
