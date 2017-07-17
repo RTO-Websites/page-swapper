@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 14.02.2017 08:21
+ * Last change: 17.07.2017 08:16
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -217,6 +217,7 @@ var PageSwapper = function (args) {
   var loadComplete = function (data, textStatus, url, jqXHR) {
     $('body').removeClass('psw-loading').addClass('psw-finish-loading');
 
+
     var newTab = $('<div class="tab psw-tab" />'),
       currentTab = self.getCurrent(),
       title = '',
@@ -316,7 +317,6 @@ var PageSwapper = function (args) {
   var finish = function (owlItem, callbackArgs) {
     // callback
     container.trigger('psw-loadcomplete', callbackArgs);
-
     // jump to tab on owl
     self.jumpTo(owlItem.index());
 
@@ -460,9 +460,11 @@ var PageSwapper = function (args) {
   var getTabFromData = function (data) {
     // Parse data
     data = data.replace('<body', '<body><div id="psw-body"').replace('</body>', '</div></body');
+    console.info('data',args.selector);
     var newHtml = $.parseHTML(data, true),
       bodyClass;
     newHtml = $(newHtml);
+    console.info('newhtml', newHtml);
 
     if (newHtml.filter('#psw-body').length > 0) {
       // Add new class to body
@@ -569,7 +571,15 @@ jQuery.fn.pageSwapper = function (args) {
   if (typeof(args) === 'undefined') {
     args = {};
   }
-  args.selector = this.selector;
+
+  if (!typeof(args.selector) === 'undefined') {
+    args.selector = this.selector;
+  }
+
+  if (typeof(args.selector) === 'undefined') {
+    console.info('PageSwapper: No selector defined');
+  }
+
   this.each(function (index, element) {
     if (typeof(document.pageSwapperInstance) === 'undefined') {
       args.container = jQuery(element);
