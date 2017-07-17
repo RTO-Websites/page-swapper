@@ -7,7 +7,8 @@ http://www.owlcarousel.owlgraphic.com/
 Init
 ===
 ```
-$('body').pageSwapper({
+$('.wrap').pageSwapper({
+    selector: '.wrap',
     owlConfig: {
         animateOut: 'zoomOut',
         animateIn: 'zoomIn',
