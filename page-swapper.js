@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 17.07.2017 08:16
+ * Last change: 17.07.2017 14:11
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -460,11 +460,10 @@ var PageSwapper = function (args) {
   var getTabFromData = function (data) {
     // Parse data
     data = data.replace('<body', '<body><div id="psw-body"').replace('</body>', '</div></body');
-    console.info('data',args.selector);
+
     var newHtml = $.parseHTML(data, true),
       bodyClass;
     newHtml = $(newHtml);
-    console.info('newhtml', newHtml);
 
     if (newHtml.filter('#psw-body').length > 0) {
       // Add new class to body
