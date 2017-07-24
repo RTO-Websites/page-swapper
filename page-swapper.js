@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 17.07.2017 14:11
+ * Last change: 24.07.2017 16:14
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -321,6 +321,8 @@ var PageSwapper = function (args) {
     self.jumpTo(owlItem.index());
 
     debug('psw finish', owlItem, owlItem.index());
+
+    checkHash();
 
     /**
      * Track ajax
