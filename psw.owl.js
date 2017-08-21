@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 22.11.2016 14:09
+ * Last change: 21.08.2017 11:52
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -36,7 +36,6 @@ PageSwapper.sliders.owl = {
       return;
     }
 
-
     // for owl v1
     if (psw.container.data('owl.carousel') && psw.container.data('owl.carousel')._plugins &&
       psw.container.data('owl.carousel')._plugins.autoHeight) {
@@ -44,6 +43,15 @@ PageSwapper.sliders.owl = {
         psw.container.data('owl.carousel')._plugins.autoHeight.update();
       }, 300);
     }
+
+    // clear dom
+    $(document).on('translated.owl.carousel', '.psw-container', function (e) {
+      e.stopPropagation();
+      if (!$(e.target).is('.psw-container')) {
+        return;
+      }
+      $('.psw-item:not(.active) .psw-tab').empty();
+    });
   },
 
   to: function(psw, index) {
