@@ -1,6 +1,6 @@
 /************************************
  * Author: Sascha Hennemann
- * Last change: 24.07.2017 16:14
+ * Last change: 13.12.2017 10:29
  *
  *
  * Requrires: jQuery, modernizr, owl.carousel2
@@ -220,6 +220,8 @@ var PageSwapper = function (args) {
 
     var newTab = $('<div class="tab psw-tab" />'),
       currentTab = self.getCurrent(),
+      tabData,
+      pswPageId = '',
       title = '',
       bodyClass = '';
 
@@ -262,7 +264,8 @@ var PageSwapper = function (args) {
       'oldTab': currentTab,
       'newTab': newTab.parent(),
       'url': url,
-      'currentUrl': currentUrl
+      'currentUrl': currentUrl,
+      'fullHtml': tabData.fullHtml,
     });
   };
 
@@ -484,7 +487,7 @@ var PageSwapper = function (args) {
       content = newHtml.filter('#psw-body');
     }
 
-    return {content: content, bodyClass: bodyClass};
+    return {content: content, bodyClass: bodyClass, fullHtml: newHtml};
   };
 
   /**
