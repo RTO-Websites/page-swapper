@@ -13,6 +13,7 @@ module.exports = (grunt) ->
           'page-swapper.min.js': [
             'page-swapper.js'
             'psw.owl.js'
+            'psw.swiper.js'
           ]
 
   # Register tasks
